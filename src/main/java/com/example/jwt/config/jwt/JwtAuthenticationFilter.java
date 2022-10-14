@@ -22,6 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
+//UsernamePasswordAuthenticationFilter
+//login 요청해서 username,password 전송하면(post)
+//작동함
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
@@ -34,10 +37,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 			throws AuthenticationException {
 		
 		System.out.println("JwtAuthenticationFilter : 진입");
-		
+		//1.username, password 받아서
+		//2. 정상인지 테스트해보기 authenticationManager-> principalDetailsService가 실행됨
+		//3.principalDetailsService가 실행됨->loadUserByUsername 자동실행
+		//4.PrincipalDetails(user)를 세션에 담고
+		//이걸 담는 이유는 권한관리때문에
+		//5.jwt 토큰에 담음ㄴ됨
 		// request에 있는 username과 password를 파싱해서 자바 Object로 받기
+
+		//json 데이터를 파싱해줌
 		ObjectMapper om = new ObjectMapper();
 		LoginRequestDto loginRequestDto = null;
+
 		try {
 			loginRequestDto = om.readValue(request.getInputStream(), LoginRequestDto.class);
 		} catch (Exception e) {
@@ -65,7 +76,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		// 결론은 인증 프로바이더에게 알려줄 필요가 없음.
 		Authentication authentication = 
 				authenticationManager.authenticate(authenticationToken);
-		
+		//authentication가 세션에 저장됨
 		PrincipalDetails principalDetailis = (PrincipalDetails) authentication.getPrincipal();
 		System.out.println("Authentication : "+principalDetailis.getUser().getUsername());
 		return authentication;
@@ -77,7 +88,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 			Authentication authResult) throws IOException, ServletException {
 		
 		PrincipalDetails principalDetailis = (PrincipalDetails) authResult.getPrincipal();
-		
+
 		String jwtToken = JWT.create()
 				.withSubject(principalDetailis.getUsername())
 				.withExpiresAt(new Date(System.currentTimeMillis()+JwtProperties.EXPIRATION_TIME))
@@ -85,7 +96,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 				.withClaim("username", principalDetailis.getUser().getUsername())
 				.sign(Algorithm.HMAC512(JwtProperties.SECRET));
 		
-		response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX+jwtToken);
+		response.addHeader("Authorization", "Bearer "+jwtToken);
 	}
 	
 }

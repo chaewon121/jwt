@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 
 import lombok.RequiredArgsConstructor;
-
+//http://localhost:8080/login-> 동작안할거임 막아놔서
 @Service
 @RequiredArgsConstructor
 public class PrincipalDetailsService implements UserDetailsService{

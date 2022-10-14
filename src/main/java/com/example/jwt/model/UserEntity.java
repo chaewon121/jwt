@@ -1,8 +1,8 @@
 package com.example.jwt.model;
 
-import lombok.Data;
-
 import javax.persistence.*;
+
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
